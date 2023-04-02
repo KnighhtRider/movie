@@ -1,12 +1,16 @@
 import React, { Component } from 'react'
-import {movies} from './getMovies'
+//import {movies} from './getMovies'
+import axios from "axios";
+//import { movies } from './getMovies';
 
 export default class List extends Component {
 
   constructor() {
     super();
+    console.log("constructor is called... ")
     this.state = {
       hover:'',
+      movies:[],
     }
   }
 
@@ -22,11 +26,33 @@ export default class List extends Component {
     })  
   }  
 
+  async componentDidMount() {
+    // console.log("CDM is called... ");
+    // let res = await fetch("https://api.themoviedb.org/3/movie/popular?api_key=1749ee86927c862e6ac40360e3eb8c0d&language=en-US&page=1");
+    // let data = await res.json();
+    let data = await axios.get(
+      "https://api.themoviedb.org/3/movie/popular?api_key=1749ee86927c862e6ac40360e3eb8c0d&language=en-US&page=1"
+      );
+    console.log(data.data);
+
+    this.setState({
+      movies:[...data.data.results],
+    })
+
+  }
+  componentDidUpdate() {
+    console.log("CDU is called... ");
+  }
+  componentWillUnmount() {
+    console.log("CWU is called... ");
+  }
+
   render() {
-    let allmovie = movies.results;
+    console.log("rendered ....")
+    //let allmovie = movies.results;
     return (
       <>
-        {allmovie.length === 0 ? (
+        {this.state.movies.length === 0 ? (
           <div className='spinner-border text-warning' role="status">
           <span clclassName='visually-hidden'>Loading...</span>
         </div>
@@ -38,7 +64,7 @@ export default class List extends Component {
               </h3>
               <div className='movies-list'>
               {
-                allmovie.map((movieObj) => {
+                this.state.movies.map((movieObj) => {
                 return (
                   <div 
                     className="card movie-card" 
