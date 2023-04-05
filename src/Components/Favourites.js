@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
-import axios from 'axios';
-import Navbar from './Navbar';
+import { json } from 'react-router-dom';
+//import axios from 'axios';
+//import Navbar from './Navbar';
 
 export default class Favourites extends Component {
 
@@ -10,7 +11,9 @@ export default class Favourites extends Component {
       movies: [],
       genre: [],
       currGenre: "All Genre",
-      currText: ""
+      currText: "",
+      limit: 5,
+      currPage: 1,
     }
   }
 
@@ -51,7 +54,7 @@ export default class Favourites extends Component {
     });
 
     allGenre.unshift("All Genre");
-    console.log(allGenre);
+    //console.log(allGenre);
 
     this.setState({
       movies:[...data],
@@ -118,6 +121,17 @@ export default class Favourites extends Component {
     });
   }
 
+  handleDelete = (id) => {
+    let newMovies = this.state.movies.filter((movieObj) => {
+      return movieObj.id!==id
+    })
+    this.setState({
+      movies: [...newMovies]
+    })
+    localStorage.setItem("movies", JSON.stringify(newMovies));
+  }
+
+
   render() {
     let genreId = {
       28: "Action",
@@ -161,6 +175,16 @@ export default class Favourites extends Component {
     }
     //else filteredMovies = this.state.movies;
 
+    let numberOfPages = Math.ceil(filteredMovies.length / this.state.limit);
+    let pagesArr = []
+    for(let i=1; i<=numberOfPages; i++) {
+      pagesArr.push(i);
+    }
+
+    let si = (this.state.currPage-1) * this.state.limit;
+    let ei = si + this.state.limit;
+    filteredMovies = filteredMovies.slice(si, ei);
+
     return (
       <>
         {/* <Navbar /> */}
@@ -170,9 +194,9 @@ export default class Favourites extends Component {
             <ul className='list-group'>
             {this.state.genre.map((genre) => {
               return this.state.currGenre === genre ? (
-                <li class="list-group-item active">{genre}</li>
+                <li className="list-group-item active">{genre}</li>
               ) : (
-                <li class="list-group-item" onClick={this.handleGenre}>
+                <li className="list-group-item" onClick={this.handleGenre}>
                   {genre}
                 </li>
               );
@@ -191,7 +215,11 @@ export default class Favourites extends Component {
               value={this.state.currText}
               onChange = {this.handleText}
               ></input>
-              <input className='col-3 ms-5' type="number" placeholder="Results per page"></input>
+              <input className='col-3 ms-5' 
+              type="number" 
+              placeholder="Results per page"
+              onChange={(e) => this.setState({ limit: Number(e.target.value)})}
+              ></input>
             </div>
             <table className="table">
               <thead>
@@ -200,23 +228,23 @@ export default class Favourites extends Component {
                   <th scope="col">Genre</th>
                   <th scope="col">
                     <i
-                      class="fa-solid fa-sort-up"
+                      className="fa-solid fa-sort-up"
                       onClick={this.sortPopularityAsc}
                     />
                     Popularity
                     <i
-                    class="fa-solid fa-sort-down"
+                    className="fa-solid fa-sort-down"
                     onClick={this.sortPopularityDesc}
                     />
                   </th>
                   <th scope="col">
                     <i
-                        class="fa-solid fa-sort-up"
+                        className="fa-solid fa-sort-up"
                         onClick={this.sortRatingAsc}
                       />
                       Rating
                       <i
-                      class="fa-solid fa-sort-down"
+                      className="fa-solid fa-sort-down"
                       onClick={this.sortRatingDesc}
                       />
                   </th>
@@ -235,13 +263,27 @@ export default class Favourites extends Component {
                   <td>{ movieObj.popularity}</td>
                   <td>{ movieObj.vote_average}</td>
                   <td>
-                    <button className='btn btn-outline-danger'>Delete</button>
+                    <button className='btn btn-outline-danger' onClick={()=>this.handleDelete(movieObj.id)}>Delete</button>
                   </td>
                 </tr>
                 ))}
               </tbody>
             </table>  
           </div>
+          <nav aria-label="Page navigation example" className="pagination">
+              <ul className="pagination">
+              {pagesArr.map((pageNum) => {
+              return (
+                <li
+                  className="page-item"
+                  onClick={() => this.setState({ currPage: pageNum })}
+                >
+                  <a className="page-link">{pageNum}</a>
+                </li>
+              );
+            })}         
+              </ul>
+            </nav>    
         </div>
       </>
     )

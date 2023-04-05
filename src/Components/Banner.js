@@ -36,7 +36,7 @@ export default class Banner extends Component {
             <span className="visually-hidden">Loading...</span>
           </div>
         ) : (
-          <div className="card banner-card">
+          <div  className="card banner-card">
               <img 
                 src={`https://image.tmdb.org/t/p/original/${this.state.movies[0].backdrop_path}`} 
                 className="card-img-top banner-img" alt="..." 
