@@ -9,7 +9,8 @@ export default class Favourites extends Component {
     this.state = {
       movies: [],
       genre: [],
-      currGenre: "All Genre"
+      currGenre: "All Genre",
+      currText: ""
     }
   }
 
@@ -17,10 +18,8 @@ export default class Favourites extends Component {
     console.log("CDM is called... ");
     // let res = await fetch("https://api.themoviedb.org/3/movie/popular?api_key=1749ee86927c862e6ac40360e3eb8c0d&language=en-US&page=1");
     // let data = await res.json();
-    let data = await axios.get(
-      `https://api.themoviedb.org/3/movie/popular?api_key=1749ee86927c862e6ac40360e3eb8c0d&language=en-US&page=1`
-      );
-    console.log(data.data);
+    let data = JSON.parse(localStorage.getItem("movies"));
+    //console.log(data.data);
 
     let genreId = {
       28: "Action",
@@ -45,7 +44,7 @@ export default class Favourites extends Component {
     };
 
     let allGenre = [];
-    data.data.results.map((movieObj) => {
+    data.map((movieObj) => {
       if (!allGenre.includes(genreId[movieObj.genre_ids[0]])) {
         allGenre.push(genreId[movieObj.genre_ids[0]]);
       }
@@ -55,7 +54,7 @@ export default class Favourites extends Component {
     console.log(allGenre);
 
     this.setState({
-      movies:[...data.data.results],
+      movies:[...data],
       genre: [...allGenre]
     })
 
@@ -70,6 +69,54 @@ export default class Favourites extends Component {
     });
     // console.log(genre);
   };
+
+
+  handleText = (e) => {
+    this.setState({
+      currText: e.target.value
+    })
+  }
+
+
+  sortPopularityAsc = () => {
+    let allMovies = this.state.movies;
+    allMovies.sort((objA, objB) => {
+      return objA.popularity - objB.popularity;
+    });
+    this.setState({
+      movies: [...allMovies],
+    });
+  }
+
+  sortPopularityDesc = () => {
+    let allMovies = this.state.movies;
+    allMovies.sort((objA, objB) => {
+      return objB.popularity - objA.popularity;
+    });
+    this.setState({
+      movies: [...allMovies],
+    });
+  }
+
+  sortRatingAsc = () => {
+    let allMovies = this.state.movies;
+    allMovies.sort((objA, objB) => {
+      return objA.vote_average - objB.vote_average;
+    });
+    this.setState({
+      movies: [...allMovies],
+    });
+  }
+
+  sortRatingDesc = () => {
+    let allMovies = this.state.movies;
+    allMovies.sort((objA, objB) => {
+      return objB.vote_average - objA.vote_average;
+    });
+    this.setState({
+      movies: [...allMovies],
+    });
+  }
 
   render() {
     let genreId = {
@@ -94,7 +141,17 @@ export default class Favourites extends Component {
       37: "Western",
     };
 
-    let filteredMovies = [];
+    let filteredMovies = this.state.movies;
+
+    // if() {
+    //   filteredMovies = this.state.movies;
+    // }
+    if(this.state.currText !== "") {
+      filteredMovies = filteredMovies.filter(movieObj => {
+        let movieName = movieObj.original_title.toLowerCase();
+        return movieName.includes(this.state.currText)
+      })
+    }
 
    
     if (this.state.currGenre !== "All Genre") {
@@ -102,7 +159,7 @@ export default class Favourites extends Component {
         (movieObj) => genreId[movieObj.genre_ids[0]] === this.state.currGenre
       );
     }
-    else filteredMovies = this.state.movies;
+    //else filteredMovies = this.state.movies;
 
     return (
       <>
@@ -128,7 +185,12 @@ export default class Favourites extends Component {
           </div>
           <div className='col p-5'>
             <div className='row'>
-              <input className='col-8' type="text" placeholder="Search"></input>
+              <input className='col-8' 
+              type="text" 
+              placeholder="Search" 
+              value={this.state.currText}
+              onChange = {this.handleText}
+              ></input>
               <input className='col-3 ms-5' type="number" placeholder="Results per page"></input>
             </div>
             <table className="table">
@@ -136,8 +198,28 @@ export default class Favourites extends Component {
                 <tr>
                   <th scope="col">Title</th>
                   <th scope="col">Genre</th>
-                  <th scope="col">Popularity</th>
-                  <th scope="col">Rating</th>
+                  <th scope="col">
+                    <i
+                      class="fa-solid fa-sort-up"
+                      onClick={this.sortPopularityAsc}
+                    />
+                    Popularity
+                    <i
+                    class="fa-solid fa-sort-down"
+                    onClick={this.sortPopularityDesc}
+                    />
+                  </th>
+                  <th scope="col">
+                    <i
+                        class="fa-solid fa-sort-up"
+                        onClick={this.sortRatingAsc}
+                      />
+                      Rating
+                      <i
+                      class="fa-solid fa-sort-down"
+                      onClick={this.sortRatingDesc}
+                      />
+                  </th>
                   <th scope="col"></th>
                 </tr>
               </thead>
